@@ -126,8 +126,10 @@ int main(int argc, char const *argv[])
                                 printf("Ingrese el nombre de la pelicula:\n");
                                 scanf("%s", pelicula.nombre);
                                 length[0] = strlen(pelicula.nombre);
-                                printf("Ingrese una descripcion (Opcional):\n");
-                                scanf("%s", pelicula.descripcion);
+                                printf("Ingrese una descripcion:\n");
+                                limpiarBuffer();
+                                fgets(pelicula.descripcion,149,stdin);
+                                pelicula.descripcion[strlen(pelicula.descripcion) - 1 ] = '\0';
                                 length[1] = strlen(pelicula.descripcion);
                                 printf("Ingrese el idioma:\n");
                                 scanf("%s", pelicula.idioma);
@@ -401,8 +403,6 @@ int main(int argc, char const *argv[])
                                 }
                                 else
                                     printf("Error al obtener resultados.\n");
-
-                                mysql_free_result(res_ptr);
                             }
                             else
                                 printf("Error al ejecutar la sentencia.\n");
@@ -586,7 +586,8 @@ int main(int argc, char const *argv[])
         }
         else
             printf("Error al inicializar la sentencia preparada.\n");
-
+        
+        mysql_free_result(res_ptr);
         mysql_stmt_close(stmt);
         mysql_close(conexion);
     }
