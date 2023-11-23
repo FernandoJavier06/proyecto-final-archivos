@@ -124,12 +124,14 @@ int main(int argc, char const *argv[])
                             if (!mysql_stmt_bind_param(stmt, bind))
                             {
                                 printf("Ingrese el nombre de la pelicula:\n");
-                                scanf("%s", pelicula.nombre);
+                                limpiarBuffer();
+                                fgets(pelicula.nombre, 44, stdin);
+                                pelicula.nombre[strlen(pelicula.nombre) - 1] = '\0';
                                 length[0] = strlen(pelicula.nombre);
                                 printf("Ingrese una descripcion:\n");
-                                limpiarBuffer();
-                                fgets(pelicula.descripcion,149,stdin);
-                                pelicula.descripcion[strlen(pelicula.descripcion) - 1 ] = '\0';
+                                // limpiarBuffer();
+                                fgets(pelicula.descripcion, 149, stdin);
+                                pelicula.descripcion[strlen(pelicula.descripcion) - 1] = '\0';
                                 length[1] = strlen(pelicula.descripcion);
                                 printf("Ingrese el idioma:\n");
                                 scanf("%s", pelicula.idioma);
@@ -147,7 +149,6 @@ int main(int argc, char const *argv[])
                                         printf("\nRegistro insertado exitosamente\n");
                                     else
                                         printf("\nError al insertar registro\n");
-                                    mysql_stmt_close(stmt);
                                 }
                                 else
                                     printf("No se corrio la sentencia");
@@ -191,7 +192,6 @@ int main(int argc, char const *argv[])
                                         printf("\nRegistro insertado exitosamente\n");
                                     else
                                         printf("\nError al insertar registro\n");
-                                    mysql_stmt_close(stmt);
                                 }
                             }
                             else
@@ -234,7 +234,6 @@ int main(int argc, char const *argv[])
                                         printf("\nRegistro insertado exitosamente\n");
                                     else
                                         printf("\nError al insertar registro\n");
-                                    mysql_stmt_close(stmt);
                                 }
                             }
                             else
@@ -435,7 +434,9 @@ int main(int argc, char const *argv[])
                         printf("Ingrese el id de la pelicula: ");
                         scanf("%d", &pelicula.id);
                         printf("Ingrese el nuevo nombre de la pelicula: ");
-                        scanf("%s", pelicula.nombre);
+                        limpiarBuffer();
+                        fgets(pelicula.nombre, 44, stdin);
+                        pelicula.nombre[strlen(pelicula.nombre) - 1] = '\0';
                         length[0] = strlen(pelicula.nombre);
                         error_consulta = mysql_stmt_prepare(stmt, QUERY_ACTUALIZAR_PELICULA, strlen(QUERY_ACTUALIZAR_PELICULA));
                     }
@@ -582,11 +583,10 @@ int main(int argc, char const *argv[])
                 }
                 system("read -p '\nPresiona enter para continuar...' var");
             } while (opMenus != 5);
-            
         }
         else
             printf("Error al inicializar la sentencia preparada.\n");
-        
+
         mysql_free_result(res_ptr);
         mysql_stmt_close(stmt);
         mysql_close(conexion);
@@ -612,18 +612,6 @@ int conectar(MYSQL **conexion)
         error = 1;
     }
     return error;
-}
-
-void ejecutarSentencia(MYSQL_STMT *stmt)
-{
-    if (!mysql_stmt_execute(stmt))
-    {
-        if (mysql_stmt_affected_rows(stmt) > 0)
-            printf("Registro insertado exitosamente\n");
-        else
-            printf("Error al insertar registro\n");
-        mysql_stmt_close(stmt);
-    }
 }
 
 void asignarBindPelicula()
