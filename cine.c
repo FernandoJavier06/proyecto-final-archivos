@@ -47,6 +47,8 @@ typedef struct Boleto
 #define QUERY_LEER__TODO_BOLETO "SELECT * FROM Boleto"
 #define QUERY_LEER_BOLETO "SELECT * FROM Boleto where id = ?"
 
+#define QUERY_ACTUALIZAR "UPDATE %s SET %s = ? WHERE id = ?"
+#define QUERY_ACTUALIZAR_CLIE "UPDATE %s SET %s = ? WHERE nit = ?"
 #define QUERY_ACTUALIZAR_PELICULA "UPDATE Pelicula SET nombre = ? WHERE id = ?"
 #define QUERY_ACTUALIZAR_CLIENTE "UPDATE Cliente SET correo = ? WHERE nit = ? "
 #define QUERY_ACTUALIZAR_BOLETO "UPDATE Boleto SET asiento = ? WHERE id = ? "
@@ -79,7 +81,8 @@ Pelicula pelicula;
 Cliente cliente;
 Boleto boleto;
 unsigned long length[10];
-int opMenus = 0;
+int opMenus = 0, opCampo;
+char tabla[12], consulta_final_actualizar[100], campoActualizar[20];
 
 MYSQL *conexion;
 MYSQL_STMT *stmt;
@@ -92,7 +95,7 @@ MYSQL_ROW res_fila;
 int main(int argc, char const *argv[])
 {
     int opTabla = 0, opQuery = 0, error_conexion, error_consulta, filas, columnas, i, j, telefono;
-    char *tabla = (char *)malloc(sizeof(char) * 8);
+    char *consulta = "UPDATE %s";
     bool is_null[10];
 
     error_conexion = conectar(&conexion);
@@ -420,65 +423,335 @@ int main(int argc, char const *argv[])
 
                     if (opTabla == 1)
                     {
-                        bind[0].buffer_type = MYSQL_TYPE_STRING;
-                        bind[0].buffer = (char *)pelicula.nombre;
-                        bind[0].buffer_length = sizeof(pelicula.nombre);
-                        bind[0].is_null = 0;
-                        bind[0].length = &length[0];
+                        if (opCampo == 1)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)pelicula.nombre;
+                            bind[0].buffer_length = sizeof(pelicula.nombre);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
 
-                        bind[1].buffer_type = MYSQL_TYPE_LONG;
-                        bind[1].buffer = (char *)&pelicula.id;
-                        bind[1].is_null = 0;
-                        bind[1].length = 0;
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&pelicula.id;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
 
-                        printf("Ingrese el id de la pelicula: ");
-                        scanf("%d", &pelicula.id);
-                        printf("Ingrese el nuevo nombre de la pelicula: ");
-                        limpiarBuffer();
-                        fgets(pelicula.nombre, 44, stdin);
-                        pelicula.nombre[strlen(pelicula.nombre) - 1] = '\0';
-                        length[0] = strlen(pelicula.nombre);
-                        error_consulta = mysql_stmt_prepare(stmt, QUERY_ACTUALIZAR_PELICULA, strlen(QUERY_ACTUALIZAR_PELICULA));
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR, tabla, "nombre");
+                            printf("Ingrese el id de la pelicula: ");
+                            scanf("%d", &pelicula.id);
+                            printf("Ingrese el nuevo nombre de la pelicula: ");
+                            limpiarBuffer();
+                            fgets(pelicula.nombre, 44, stdin);
+                            pelicula.nombre[strlen(pelicula.nombre) - 1] = '\0';
+                            length[0] = strlen(pelicula.nombre);
+                        }
+                        else if (opCampo == 2)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)pelicula.descripcion;
+                            bind[0].buffer_length = sizeof(pelicula.descripcion);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&pelicula.id;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR, tabla, "descripcion");
+                            printf("Ingrese el id de la pelicula: ");
+                            scanf("%d", &pelicula.id);
+                            printf("Ingrese la nueva descripcion de la pelicula: ");
+                            limpiarBuffer();
+                            fgets(pelicula.descripcion, 149, stdin);
+                            pelicula.descripcion[strlen(pelicula.descripcion) - 1] = '\0';
+                            length[0] = strlen(pelicula.descripcion);
+                        }
+                        else if (opCampo == 3)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)pelicula.idioma;
+                            bind[0].buffer_length = sizeof(pelicula.idioma);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&pelicula.id;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR, tabla, "idioma");
+                            printf("Ingrese el id de la pelicula: ");
+                            scanf("%d", &pelicula.id);
+                            printf("Ingrese el nuevo idioma de la pelicula: ");
+                            scanf("%s", pelicula.idioma);
+                            length[0] = strlen(pelicula.idioma);
+                        }
+                        else if (opCampo == 4)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)pelicula.duracion;
+                            bind[0].buffer_length = sizeof(pelicula.duracion);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&pelicula.id;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR, tabla, "duracion");
+                            printf("Ingrese el id de la pelicula: ");
+                            scanf("%d", &pelicula.id);
+                            printf("Ingrese la nueva duracion de la pelicula: ");
+                            scanf("%s", pelicula.duracion);
+                            length[0] = strlen(pelicula.duracion);
+                        }
+                        else if (opCampo == 5)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)pelicula.fechaEstreno;
+                            bind[0].buffer_length = sizeof(pelicula.fechaEstreno);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&pelicula.id;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR, tabla, "fechaEstreno");
+                            printf("Ingrese el id de la pelicula: ");
+                            scanf("%d", &pelicula.id);
+                            printf("Ingrese la nueva fecha de estreno de la pelicula: ");
+                            scanf("%s", pelicula.fechaEstreno);
+                            length[0] = strlen(pelicula.fechaEstreno);
+                        }
+
+                        error_consulta = mysql_stmt_prepare(stmt, consulta_final_actualizar, strlen(consulta_final_actualizar));
                     }
                     else if (opTabla == 2)
                     {
-                        bind[0].buffer_type = MYSQL_TYPE_STRING;
-                        bind[0].buffer = (char *)cliente.correo;
-                        bind[0].buffer_length = sizeof(cliente.correo);
-                        bind[0].is_null = 0;
-                        bind[0].length = &length[0];
+                        if (opCampo == 1)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)cliente.nombre;
+                            bind[0].buffer_length = sizeof(cliente.nombre);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
 
-                        bind[1].buffer_type = MYSQL_TYPE_LONG;
-                        bind[1].buffer = (char *)&cliente.nit;
-                        bind[1].is_null = 0;
-                        bind[1].length = 0;
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&cliente.nit;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
 
-                        printf("Ingrese el nit del cliente: ");
-                        scanf("%d", &cliente.nit);
-                        printf("Ingrese el nuevo correo del cliente: ");
-                        scanf("%s", cliente.correo);
-                        length[0] = strlen(cliente.correo);
-                        error_consulta = mysql_stmt_prepare(stmt, QUERY_ACTUALIZAR_CLIENTE, strlen(QUERY_ACTUALIZAR_CLIENTE));
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR_CLIE, tabla, "nombre");
+                            printf("Ingrese el nit del cliente: ");
+                            scanf("%d", &cliente.nit);
+                            printf("Ingrese el nuevo nombre del cliente: ");
+                            scanf("%s", cliente.nombre);
+                            length[0] = strlen(cliente.nombre);
+                        }
+                        else if (opCampo == 2)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)cliente.apellido;
+                            bind[0].buffer_length = sizeof(cliente.apellido);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&cliente.nit;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR_CLIE, tabla, "apellido");
+                            printf("Ingrese el nit del cliente: ");
+                            scanf("%d", &cliente.nit);
+                            printf("Ingrese el nuevo apellido del cliente: ");
+                            scanf("%s", cliente.apellido);
+                            length[0] = strlen(cliente.apellido);
+                        }
+                        else if (opCampo == 3)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_LONG;
+                            bind[0].buffer = (char *)&cliente.edad;
+                            bind[0].is_null = 0;
+                            bind[0].length = 0;
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&cliente.nit;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR_CLIE, tabla, "edad");
+                            printf("Ingrese el nit del cliente: ");
+                            scanf("%d", &cliente.nit);
+                            printf("Ingrese la nueva edad del cliente: ");
+                            scanf("%d", &cliente.edad);
+                        }
+                        else if (opCampo == 4)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)cliente.telefono;
+                            bind[0].buffer_length = sizeof(cliente.telefono);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&cliente.nit;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR_CLIE, tabla, "telefono");
+                            printf("Ingrese el nit del cliente: ");
+                            scanf("%d", &cliente.nit);
+                            printf("Ingrese el nuevo numero de telefono del cliente: ");
+                            scanf("%s", cliente.telefono);
+                            length[0] = strlen(cliente.telefono);
+                        }
+                        else if (opCampo == 5)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)cliente.correo;
+                            bind[0].buffer_length = sizeof(cliente.correo);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&cliente.nit;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR_CLIE, tabla, "correo");
+                            printf("Ingrese el nit del cliente: ");
+                            scanf("%d", &cliente.nit);
+                            printf("Ingrese el nuevo correo del cliente: ");
+                            scanf("%s", cliente.correo);
+                            length[0] = strlen(cliente.correo);
+                        }
+
+                        error_consulta = mysql_stmt_prepare(stmt, consulta_final_actualizar, strlen(consulta_final_actualizar));
                     }
                     else if (opTabla == 3)
                     {
-                        bind[0].buffer_type = MYSQL_TYPE_STRING;
-                        bind[0].buffer = (char *)&boleto.asiento;
-                        bind[0].buffer_length = sizeof(boleto.asiento);
-                        bind[0].is_null = 0;
-                        bind[0].length = &length[0];
+                        if (opCampo == 1)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)boleto.sala;
+                            bind[0].buffer_length = sizeof(boleto.sala);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
 
-                        bind[1].buffer_type = MYSQL_TYPE_LONG;
-                        bind[1].buffer = (char *)&boleto.id;
-                        bind[1].is_null = 0;
-                        bind[1].length = 0;
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&boleto.id;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
 
-                        printf("Ingrese el id del boleto: ");
-                        scanf("%d", &boleto.id);
-                        printf("Ingrese el nuevo asiento: ");
-                        scanf("%s", boleto.asiento);
-                        length[0] = strlen(boleto.asiento);
-                        error_consulta = mysql_stmt_prepare(stmt, QUERY_ACTUALIZAR_BOLETO, strlen(QUERY_ACTUALIZAR_BOLETO));
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR, tabla, "sala");
+                            printf("Ingrese el id del boleto: ");
+                            scanf("%d", &boleto.id);
+                            printf("Ingrese la nueva sala: ");
+                            limpiarBuffer();
+                            fgets(boleto.sala, 44, stdin);
+                            boleto.sala[strlen(boleto.sala) - 1] = '\0';
+                            length[0] = strlen(boleto.sala);
+                        }
+                        else if (opCampo == 2)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)boleto.asiento;
+                            bind[0].buffer_length = sizeof(boleto.asiento);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&boleto.id;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR, tabla, "asiento");
+                            printf("Ingrese el id del boleto: ");
+                            scanf("%d", &boleto.id);
+                            printf("Ingrese el nuevo asiento: ");
+                            scanf("%s", boleto.asiento);
+                            length[0] = strlen(boleto.asiento);
+                        }
+                        else if (opCampo == 3)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_DOUBLE;
+                            bind[0].buffer = (char *)&boleto.precio;
+                            bind[0].is_null = 0;
+                            bind[0].length = 0;
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&boleto.id;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR, tabla, "precio");
+                            printf("Ingrese el id del boleto: ");
+                            scanf("%d", &boleto.id);
+                            printf("Ingrese el nuevo precio: ");
+                            scanf("%lf", &boleto.precio);
+                        }
+                        else if (opCampo == 4)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)boleto.hora;
+                            bind[0].buffer_length = sizeof(boleto.hora);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&boleto.id;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR, tabla, "hora");
+                            printf("Ingrese el id del boleto: ");
+                            scanf("%d", &boleto.id);
+                            printf("Ingrese la nueva hora: ");
+                            scanf("%s", boleto.hora);
+                            length[0] = strlen(boleto.hora);
+                        }
+                        else if (opCampo == 5)
+                        {
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char *)boleto.fecha;
+                            bind[0].buffer_length = sizeof(boleto.fecha);
+                            bind[0].is_null = 0;
+                            bind[0].length = &length[0];
+
+                            bind[1].buffer_type = MYSQL_TYPE_LONG;
+                            bind[1].buffer = (char *)&boleto.id;
+                            bind[1].is_null = 0;
+                            bind[1].length = 0;
+
+                            snprintf(consulta_final_actualizar, sizeof(consulta_final_actualizar),
+                                     QUERY_ACTUALIZAR, tabla, "fecha");
+                            printf("Ingrese el id del boleto: ");
+                            scanf("%d", &boleto.id);
+                            printf("Ingrese la nueva fecha: ");
+                            scanf("%s", boleto.fecha);
+                            length[0] = strlen(boleto.fecha);
+                        }
+
+                        error_consulta = mysql_stmt_prepare(stmt, consulta_final_actualizar, strlen(consulta_final_actualizar));
                     }
                     else
                     {
@@ -486,6 +759,7 @@ int main(int argc, char const *argv[])
                         printf("Opcion incorrecta.\n");
                     }
 
+                    printf("%s\n", consulta_final_actualizar);
                     if (!error_consulta)
                     {
                         if (!mysql_stmt_bind_param(stmt, bind))
@@ -874,12 +1148,50 @@ void seleccionarVista(int *opQuery)
 
 void seleccionarActualizacion(int *opTabla)
 {
-    printf("Opciones disponibles:\n");
-    printf("1.Actualizar nombre de una pelicula.\n");
-    printf("2.Actualizar correo de un cliente.\n");
-    printf("3.Actualizar asiento de un boleto.\n\n");
+    printf("\n¿Sobre qué tabla desea realizar la operación?\n");
+    printf("1.Pelicula.\n");
+    printf("2.Cliente.\n");
+    printf("3.Boleto.\n\n");
     printf("Ingrese la opcion deseada: ");
     scanf("%d", opTabla);
+
+    system("clear");
+    if (*opTabla == 1)
+    {
+        strcpy(tabla, "Pelicula");
+        printf("Campos de la tabla %s\n", tabla);
+        printf("1.nombre\n");
+        printf("2.descripcion\n");
+        printf("3.idioma\n");
+        printf("4.duracion\n");
+        printf("5.fecha de estreno\n\n");
+        printf("Ingrese el numero del campo que desea actualizar: ");
+        scanf("%d", &opCampo);
+    }
+    else if (*opTabla == 2)
+    {
+        strcpy(tabla, "Cliente");
+        printf("Campos de la tabla %s\n", tabla);
+        printf("1.nombre\n");
+        printf("2.apellido\n");
+        printf("3.edad\n");
+        printf("4.telefono\n");
+        printf("5.correo\n\n");
+        printf("Ingrese el numero del campo que desea actualizar: ");
+        scanf("%d", &opCampo);
+    }
+    else if (*opTabla == 3)
+    {
+        strcpy(tabla, "Boleto");
+        printf("Campos de la tabla %s\n", tabla);
+        printf("1.sala\n");
+        printf("2.asiento\n");
+        printf("3.precio\n");
+        printf("4.hora\n");
+        printf("5.fecha\n\n");
+        printf("Ingrese el numero del campo que desea actualizar: ");
+        scanf("%d", &opCampo);
+    }
 }
 
 void limpiarBuffer()
